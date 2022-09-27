@@ -1,4 +1,4 @@
-package cmdb_utils
+package cmdbutils
 
 import (
 	"crypto/hmac"
