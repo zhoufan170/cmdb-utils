@@ -1,3 +1,3 @@
-module cmdb_utils
+module cmdbutils
 
 go 1.17
