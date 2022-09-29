@@ -99,7 +99,7 @@ func CmdbPost(uri string, data map[string]interface{}, ak string, sk string, dom
 
 	client.SetHeader("Content-Type", "application/json")
 	// global.CmdbHttpClient.SetHeader("Host", "openapi.easyops-only.com")
-	result, err := client.R().SetBody(string(payload)).Post(baseUrl.String())
+	result, err := client.R().SetBody(data).Post(baseUrl.String())
 	if err != nil {
 		return err
 	}
