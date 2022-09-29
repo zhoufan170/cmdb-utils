@@ -7,10 +7,13 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"github.com/go-resty/resty/v2"
 	"io"
+	"net/url"
 	"sort"
 	"strconv"
 	"strings"
+	"time"
 )
 
 func GenSignature(accessKey string, secretKey string, requestTime int64,
@@ -73,4 +76,34 @@ func hmacSha1(key string, originStr string) string {
 	mac.Write([]byte(originStr))
 	res := hex.EncodeToString(mac.Sum(nil))
 	return res
+}
+
+func CmdbPost(uri string, data map[string]interface{}, ak string, sk string, domain string, client *resty.Client) error {
+	method := "POST"
+
+	now := time.Now().Unix()
+	var signature string
+	uriParams := make(map[string]string)
+	_ = GenSignature(ak, sk, now, method, uri, uriParams, data, &signature)
+
+	fullUri := fmt.Sprintf("%s/%s", domain, uri)
+	baseUrl, _ := url.Parse(fullUri)
+	baseUrl.Path = uri
+	params := url.Values{}
+	params.Add("accesskey", ak)
+	params.Add("signature", signature)
+	fmt.Println(strconv.FormatInt(now, 10))
+	params.Add("expires", strconv.FormatInt(now, 10))
+	baseUrl.RawQuery = params.Encode()
+	fmt.Printf("Encode URL is %q\n", baseUrl.String())
+
+	client.SetHeader("Content-Type", "application/json")
+	// global.CmdbHttpClient.SetHeader("Host", "openapi.easyops-only.com")
+	result, err := client.R().SetBody(data).Post(baseUrl.String())
+	if err != nil {
+		return err
+	}
+	fmt.Println(result.Status())
+	fmt.Println(string(result.Body()))
+	return nil
 }
