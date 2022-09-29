@@ -14,7 +14,7 @@ import (
 )
 
 func GenSignature(accessKey string, secretKey string, requestTime int64,
-	method string, uri string, data map[string]string, signature *string) error {
+	method string, uri string, params map[string]string, data map[string]interface{}, signature *string) error {
 	//计算签名 核心的加密的函数
 	//:param access_key: access_key
 	//:param secret_key: secret_key
@@ -27,7 +27,7 @@ func GenSignature(accessKey string, secretKey string, requestTime int64,
 	urlParams := ""
 	if method == "GET" || method == "DELETE" {
 		var keys []string
-		for k := range data {
+		for k := range params {
 			keys = append(keys, k)
 		}
 		sort.Strings(keys)
