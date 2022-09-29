@@ -78,7 +78,7 @@ func hmacSha1(key string, originStr string) string {
 	return res
 }
 
-func CmdbPost(uri string, data map[string]interface{}, ak string, sk string, domain string, client *resty.Client) error {
+func CmdbPost(uri string, data map[string]interface{}, ak string, sk string, domain string, client *resty.Client, statusCode *int, body *[]byte) error {
 	method := "POST"
 
 	now := time.Now().Unix()
@@ -103,7 +103,7 @@ func CmdbPost(uri string, data map[string]interface{}, ak string, sk string, dom
 	if err != nil {
 		return err
 	}
-	fmt.Println(result.Status())
-	fmt.Println(string(result.Body()))
+	*statusCode = result.StatusCode()
+	*body = result.Body()
 	return nil
 }
