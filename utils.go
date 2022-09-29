@@ -97,9 +97,14 @@ func CmdbPost(uri string, data map[string]interface{}, ak string, sk string, dom
 	baseUrl.RawQuery = params.Encode()
 	fmt.Printf("Encode URL is %q\n", baseUrl.String())
 
+	payload, err := json.Marshal(data)
+	if err != nil {
+		return err
+	}
+
 	client.SetHeader("Content-Type", "application/json")
 	// global.CmdbHttpClient.SetHeader("Host", "openapi.easyops-only.com")
-	result, err := client.R().SetBody(data).Post(baseUrl.String())
+	result, err := client.R().SetBody(string(payload)).Post(baseUrl.String())
 	if err != nil {
 		return err
 	}
