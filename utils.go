@@ -120,6 +120,9 @@ func CmdbDelete(uri string, data map[string]string, ak string, sk string, domain
 	params.Add("accesskey", ak)
 	params.Add("signature", signature)
 	params.Add("expires", strconv.FormatInt(now, 10))
+	for k, v := range data {
+		params.Add(k, v)
+	}
 	baseUrl.RawQuery = params.Encode()
 
 	client.SetHeader("Content-Type", "application/json")
