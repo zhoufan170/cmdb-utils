@@ -127,7 +127,7 @@ func CmdbDelete(uri string, data map[string]string, ak string, sk string, domain
 
 	client.SetHeader("Content-Type", "application/json")
 	// global.CmdbHttpClient.SetHeader("Host", "openapi.easyops-only.com")
-	result, err := client.R().SetBody(data).Delete(baseUrl.String())
+	result, err := client.R().Delete(baseUrl.String())
 	if err != nil {
 		return err
 	}
