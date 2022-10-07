@@ -52,7 +52,6 @@ func GenSignature(accessKey string, secretKey string, requestTime int64,
 		}
 	}
 
-	fmt.Println(strconv.FormatInt(requestTime, 10))
 	signInfo := []string{method, uri, urlParams, "application/json", bodyContent, strconv.FormatInt(requestTime, 10), accessKey}
 	signDecode := strings.Join(signInfo, "\n")
 
@@ -92,10 +91,36 @@ func CmdbPost(uri string, data map[string]interface{}, ak string, sk string, dom
 	params := url.Values{}
 	params.Add("accesskey", ak)
 	params.Add("signature", signature)
-	fmt.Println(strconv.FormatInt(now, 10))
 	params.Add("expires", strconv.FormatInt(now, 10))
 	baseUrl.RawQuery = params.Encode()
-	fmt.Printf("Encode URL is %q\n", baseUrl.String())
+
+	client.SetHeader("Content-Type", "application/json")
+	// global.CmdbHttpClient.SetHeader("Host", "openapi.easyops-only.com")
+	result, err := client.R().SetBody(data).Post(baseUrl.String())
+	if err != nil {
+		return err
+	}
+	*statusCode = result.StatusCode()
+	*body = result.Body()
+	return nil
+}
+
+func CmdbDelete(uri string, data map[string]interface{}, ak string, sk string, domain string, client *resty.Client, statusCode *int, body *[]byte) error {
+	method := "DELETE"
+
+	now := time.Now().Unix()
+	var signature string
+	uriParams := make(map[string]string)
+	_ = GenSignature(ak, sk, now, method, uri, uriParams, data, &signature)
+
+	fullUri := fmt.Sprintf("%s/%s", domain, uri)
+	baseUrl, _ := url.Parse(fullUri)
+	baseUrl.Path = uri
+	params := url.Values{}
+	params.Add("accesskey", ak)
+	params.Add("signature", signature)
+	params.Add("expires", strconv.FormatInt(now, 10))
+	baseUrl.RawQuery = params.Encode()
 
 	client.SetHeader("Content-Type", "application/json")
 	// global.CmdbHttpClient.SetHeader("Host", "openapi.easyops-only.com")
