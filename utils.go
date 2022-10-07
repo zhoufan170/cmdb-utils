@@ -36,7 +36,7 @@ func GenSignature(accessKey string, secretKey string, requestTime int64,
 		sort.Strings(keys)
 		var kvs []string
 		for _, k := range keys {
-			kvs = append(kvs, fmt.Sprintf("%s%s", k, data[k]))
+			kvs = append(kvs, fmt.Sprintf("%s%s", k, params[k]))
 		}
 		urlParams = strings.Join(kvs, "")
 	}
