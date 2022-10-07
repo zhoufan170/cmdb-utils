@@ -105,13 +105,13 @@ func CmdbPost(uri string, data map[string]interface{}, ak string, sk string, dom
 	return nil
 }
 
-func CmdbDelete(uri string, data map[string]interface{}, ak string, sk string, domain string, client *resty.Client, statusCode *int, body *[]byte) error {
+func CmdbDelete(uri string, data map[string]string, ak string, sk string, domain string, client *resty.Client, statusCode *int, body *[]byte) error {
 	method := "DELETE"
 
 	now := time.Now().Unix()
 	var signature string
-	uriParams := make(map[string]string)
-	_ = GenSignature(ak, sk, now, method, uri, uriParams, data, &signature)
+	//uriParams := make(map[string]string)
+	_ = GenSignature(ak, sk, now, method, uri, data, nil, &signature)
 
 	fullUri := fmt.Sprintf("%s/%s", domain, uri)
 	baseUrl, _ := url.Parse(fullUri)
