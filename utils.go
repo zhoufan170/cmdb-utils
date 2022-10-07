@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"github.com/go-resty/resty/v2"
 	"io"
+	"net/http"
 	"net/url"
 	"sort"
 	"strconv"
@@ -16,6 +17,28 @@ import (
 	"time"
 )
 
+// InitClient 初始化http 客户端
+func InitClient(domain string) *resty.Client {
+	var client *resty.Client
+	client = resty.New()
+	client.SetAllowGetMethodPayload(true)
+	client.SetBaseURL(domain)
+
+	tCmdb := http.DefaultTransport.(*http.Transport).Clone()
+	tCmdb.MaxIdleConns = 100
+	tCmdb.MaxIdleConnsPerHost = 100
+	tCmdb.MaxIdleConnsPerHost = 100
+
+	client.SetTransport(tCmdb)
+	return client
+}
+
+// Close 关闭http连接
+func Close(client *resty.Client) {
+	client.SetCloseConnection(true)
+}
+
+// GenSignature 生成签名
 func GenSignature(accessKey string, secretKey string, requestTime int64,
 	method string, uri string, params map[string]string, data map[string]interface{}, signature *string) error {
 	//计算签名 核心的加密的函数
@@ -77,7 +100,7 @@ func hmacSha1(key string, originStr string) string {
 	return res
 }
 
-func CmdbPost(uri string, data map[string]interface{}, ak string, sk string, domain string, client *resty.Client, statusCode *int, body *[]byte) error {
+func CmdbPost(uri string, data map[string]interface{}, ak string, sk string, client *resty.Client, statusCode *int, body *[]byte) error {
 	method := "POST"
 
 	now := time.Now().Unix()
@@ -85,7 +108,7 @@ func CmdbPost(uri string, data map[string]interface{}, ak string, sk string, dom
 	uriParams := make(map[string]string)
 	_ = GenSignature(ak, sk, now, method, uri, uriParams, data, &signature)
 
-	fullUri := fmt.Sprintf("%s/%s", domain, uri)
+	fullUri := fmt.Sprintf("%s/%s", client.BaseURL, uri)
 	baseUrl, _ := url.Parse(fullUri)
 	baseUrl.Path = uri
 	params := url.Values{}
@@ -105,7 +128,7 @@ func CmdbPost(uri string, data map[string]interface{}, ak string, sk string, dom
 	return nil
 }
 
-func CmdbDelete(uri string, data map[string]string, ak string, sk string, domain string, client *resty.Client, statusCode *int, body *[]byte) error {
+func CmdbDelete(uri string, data map[string]string, ak string, sk string, client *resty.Client, statusCode *int, body *[]byte) error {
 	method := "DELETE"
 
 	now := time.Now().Unix()
@@ -113,7 +136,7 @@ func CmdbDelete(uri string, data map[string]string, ak string, sk string, domain
 	//uriParams := make(map[string]string)
 	_ = GenSignature(ak, sk, now, method, uri, data, nil, &signature)
 
-	fullUri := fmt.Sprintf("%s/%s", domain, uri)
+	fullUri := fmt.Sprintf("%s/%s", client.BaseURL, uri)
 	baseUrl, _ := url.Parse(fullUri)
 	baseUrl.Path = uri
 	params := url.Values{}
